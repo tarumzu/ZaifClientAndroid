@@ -4,31 +4,88 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
+apply plugin: 'kotlin-kapt'
+
 android {
     compileSdkVersion 26
     defaultConfig {
-        applicationId "android.client.zaif.taru.zaifclientandroid"
+        applicationId "android.client.zaif.taru.zaifclient"
         minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    // signingConfigs
+    // デバッグ用 apk とリリース用 apk の署名の設定
+    signingConfigs {
+        apply from: 'signingConfigs/debug.gradle', to: android
+        def releaseSettingGradleFile = new File("${project.rootDir}/app/signingConfigs/release.gradle")
+        if (releaseSettingGradleFile.exists()) {
+            apply from: releaseSettingGradleFile, to: android
+        } else {
+            release {
+                storeFile = debug.storeFile
+                storePassword = debug.storePassword
+                keyAlias = debug.keyAlias
+                keyPassword = debug.keyPassword
+            }
+        }
+    }
     buildTypes {
+        debug {
+            debuggable true
+            applicationIdSuffix = '.debug' // パッケージ名に .debug をつける
+            versionNameSuffix = 'd'        // バージョン名の末尾に d をつける
+            signingConfig signingConfigs.debug
+        }
         release {
+            debuggable false
             minifyEnabled false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    flavorDimensions "env"
+    // プロダクトフレーバー
+    productFlavors {
+        develop {
+            applicationId "android.client.zaif.taru.zaifclient.dev"
+            signingConfig signingConfigs.debug
+        }
+        production {
+            //applicationId "android.client.zaif.taru.zaifclient"
         }
     }
 }
 
+def supportVersion = '26.1.0'
+def okhttp3Version = '3.9.1'
+def retrofit2Version = '2.3.0'
+def daggerVersion = '2.12'
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.android.support:design:26.1.0'
+    implementation "com.android.support:appcompat-v7:$supportVersion"
+    implementation "com.android.support:design:$supportVersion"
+    implementation "com.android.support:recyclerview-v7:$supportVersion"
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    // 通信
+    implementation "com.squareup.okhttp3:okhttp:$okhttp3Version"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okhttp3Version"
+    implementation "com.squareup.retrofit2:retrofit:$retrofit2Version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofit2Version"
+    implementation 'com.google.code.gson:gson:2.8.2'
+    // DI
+    implementation "com.google.dagger:dagger:$daggerVersion"
+    annotationProcessor "com.google.dagger:dagger-compiler:$daggerVersion"
+    kapt "com.google.dagger:dagger-compiler:2.12"
+    // encryption
+    implementation 'com.facebook.conceal:conceal:2.0.1@aar'
+
+
 }

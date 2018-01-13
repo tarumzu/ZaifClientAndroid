@@ -1,4 +1,4 @@
-package android.client.zaif.taru.zaifclientandroid
+package android.client.zaif.taru.zaifclient
 
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4

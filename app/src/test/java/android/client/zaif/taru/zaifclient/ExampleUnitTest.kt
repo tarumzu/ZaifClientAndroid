@@ -1,4 +1,4 @@
-package android.client.zaif.taru.zaifclientandroid
+package android.client.zaif.taru.zaifclient
 
 import org.junit.Test
 
