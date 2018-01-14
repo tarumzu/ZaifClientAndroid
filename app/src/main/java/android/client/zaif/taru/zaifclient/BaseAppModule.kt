@@ -6,7 +6,7 @@ import android.client.zaif.taru.zaifclient.network.ZaifClientService
 import android.content.Context
 import dagger.Module
 import dagger.Provides
-import retrofit2.Retrofit
+import okhttp3.OkHttpClient
 import javax.inject.Singleton
 
 /**
@@ -24,5 +24,11 @@ class BaseAppModule(private val application: Application) {
     @Singleton
     open fun provideZaifClientService(): ZaifClientService {
         return ServiceGenerator.createRetrofit(provideAppContext()).create(ZaifClientService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    open fun providemZaifClientWSOkHttpClient(): OkHttpClient {
+        return ServiceGenerator.createWSOkHttpClient(provideAppContext())
     }
 }

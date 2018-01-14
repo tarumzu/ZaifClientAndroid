@@ -19,7 +19,12 @@ import android.view.ViewGroup
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_main.view.*
+import okhttp3.*
 import javax.inject.Inject
+import okio.ByteString.decodeHex
+import okio.ByteString
+import timber.log.Timber
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,10 +38,37 @@ class MainActivity : AppCompatActivity() {
      */
     private var mSectionsPagerAdapter: SectionsPagerAdapter? = null
     @Inject lateinit protected var mZaifClientService: ZaifClientService
+    @Inject lateinit protected var mZaifClientWSOkHttpClient: OkHttpClient
+    lateinit protected var mWebSocket: WebSocket
 
 
     protected fun inject(component: BaseAppComponent) {
         component.inject(this);
+    }
+
+    private inner class EchoWebSocketListener : WebSocketListener() {
+
+        override fun onOpen(webSocket: WebSocket, response: Response) {
+            Timber.d("open")
+        }
+
+        override fun onMessage(webSocket: WebSocket?, text: String?) {
+            Timber.d("Receiving : " + text!!)
+        }
+
+        override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+            Timber.d("Receiving bytes : " + bytes.hex())
+        }
+
+        override fun onClosing(webSocket: WebSocket?, code: Int, reason: String?) {
+            webSocket!!.close(1000, null)
+            Timber.d("Closing : $code / $reason")
+        }
+
+        override fun onFailure(webSocket: WebSocket?, t: Throwable?, response: Response?) {
+            Timber.d("Error : " + t?.message)
+        }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,6 +90,10 @@ class MainActivity : AppCompatActivity() {
                     .setAction("Action", null).show()
         }
 
+        val request: Request = Request.Builder().url(getString(R.string.api_ws_base_url) + "btc_jpy").build()
+        mWebSocket = mZaifClientWSOkHttpClient.newWebSocket(request, EchoWebSocketListener())
+
+        mZaifClientWSOkHttpClient.dispatcher().executorService().shutdown()
     }
 
 

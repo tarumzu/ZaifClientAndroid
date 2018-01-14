@@ -86,6 +86,8 @@ dependencies {
     kapt "com.google.dagger:dagger-compiler:2.12"
     // encryption
     implementation 'com.facebook.conceal:conceal:2.0.1@aar'
+    // log
+    implementation 'com.jakewharton.timber:timber:4.5.1'
 
 
 }

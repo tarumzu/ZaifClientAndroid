@@ -1,6 +1,7 @@
 package android.client.zaif.taru.zaifclient
 
 import android.app.Application
+import timber.log.Timber
 
 /**
  * Created by mizukami on 2018/01/13.
@@ -22,6 +23,10 @@ class ZaifClientApplication: Application() {
         sComponent = DaggerBaseAppComponent.builder()
                 .baseAppModule(BaseAppModule(this))
                 .build()
+
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        }
     }
 }
 

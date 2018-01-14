@@ -5,6 +5,7 @@ import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -63,6 +64,35 @@ class ServiceGenerator {
 
             return retrofit;
 
+        }
+
+        open fun createWSOkHttpClient(context: Context): OkHttpClient {
+
+
+            val httpClientBuilder: OkHttpClient.Builder = OkHttpClient.Builder()
+
+            // log
+            val logging: HttpLoggingInterceptor = HttpLoggingInterceptor()
+                    .setLevel(HttpLoggingInterceptor.Level.BODY)
+            if (!httpClientBuilder.interceptors().contains(logging)) {
+                httpClientBuilder.addInterceptor(logging)
+            }
+
+            val zaifClientInterceptor = ZaifClientInterceptor(context.getApplicationContext(), null, null)
+            if (!httpClientBuilder.interceptors().contains(zaifClientInterceptor)) {
+                httpClientBuilder.addInterceptor(zaifClientInterceptor);
+            }
+
+            // staging環境でタイム・アウトしてしまうため伸ばす。
+            //if (Utils.isStaging() || Utils.isDevelop()) {
+            //    httpClient.connectTimeout(100, TimeUnit.SECONDS);
+            //    httpClient.readTimeout(100, TimeUnit.SECONDS);
+            //}else{
+            httpClientBuilder.connectTimeout(20, TimeUnit.SECONDS)
+            httpClientBuilder.readTimeout(20, TimeUnit.SECONDS)
+            //}
+
+            return httpClientBuilder.build()
         }
     }
 }
