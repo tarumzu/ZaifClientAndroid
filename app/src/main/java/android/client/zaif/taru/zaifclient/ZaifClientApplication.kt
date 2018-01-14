@@ -9,6 +9,10 @@ class ZaifClientApplication: Application() {
     companion object {
         lateinit var sComponent: BaseAppComponent
         lateinit var sApp: ZaifClientApplication
+
+        open fun getAppComponent(): BaseAppComponent {
+            return sComponent
+        }
     }
 
     override fun onCreate() {

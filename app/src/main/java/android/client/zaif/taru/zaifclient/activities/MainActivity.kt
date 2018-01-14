@@ -1,6 +1,9 @@
 package android.client.zaif.taru.zaifclient.activities
 
+import android.client.zaif.taru.zaifclient.BaseAppComponent
 import android.client.zaif.taru.zaifclient.R
+import android.client.zaif.taru.zaifclient.ZaifClientApplication
+import android.client.zaif.taru.zaifclient.network.ZaifClientService
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 
@@ -16,6 +19,7 @@ import android.view.ViewGroup
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_main.view.*
+import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,10 +32,18 @@ class MainActivity : AppCompatActivity() {
      * [android.support.v4.app.FragmentStatePagerAdapter].
      */
     private var mSectionsPagerAdapter: SectionsPagerAdapter? = null
+    @Inject lateinit protected var mZaifClientService: ZaifClientService
+
+
+    protected fun inject(component: BaseAppComponent) {
+        component.inject(this);
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        inject(ZaifClientApplication.getAppComponent())
 
         setSupportActionBar(toolbar)
         // Create the adapter that will return a fragment for each of the three

@@ -1,6 +1,8 @@
 package android.client.zaif.taru.zaifclient
 
 import android.app.Application
+import android.client.zaif.taru.zaifclient.network.ServiceGenerator
+import android.client.zaif.taru.zaifclient.network.ZaifClientService
 import android.content.Context
 import dagger.Module
 import dagger.Provides
@@ -18,15 +20,9 @@ class BaseAppModule(private val application: Application) {
         return application;
     }
 
-    //@Provides
-    //@Singleton
-    //open fun provideZaifClientRetrofit(): Retrofit {
-    //    return ServiceGenerator.createRetrofit(appContext);
-    //}
-
-    //@Provides
-    //@Singleton
-    //open fun provideZaifClientService(): ZaifClientService {
-    //    return provideConnectlyAppRetrofit().create(ZaifClientService.class);
-    //}
+    @Provides
+    @Singleton
+    open fun provideZaifClientService(): ZaifClientService {
+        return ServiceGenerator.createRetrofit(provideAppContext()).create(ZaifClientService::class.java)
+    }
 }
