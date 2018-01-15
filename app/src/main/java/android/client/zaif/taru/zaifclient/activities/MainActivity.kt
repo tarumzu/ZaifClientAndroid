@@ -3,6 +3,7 @@ package android.client.zaif.taru.zaifclient.activities
 import android.client.zaif.taru.zaifclient.BaseAppComponent
 import android.client.zaif.taru.zaifclient.R
 import android.client.zaif.taru.zaifclient.ZaifClientApplication
+import android.client.zaif.taru.zaifclient.models.CurrencyPair
 import android.client.zaif.taru.zaifclient.network.ZaifClientService
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
@@ -39,7 +40,7 @@ class MainActivity : AppCompatActivity() {
     private var mSectionsPagerAdapter: SectionsPagerAdapter? = null
     @Inject lateinit protected var mZaifClientService: ZaifClientService
     @Inject lateinit protected var mZaifClientWSOkHttpClient: OkHttpClient
-    lateinit protected var mWebSocket: WebSocket
+    protected var mWebSocket: WebSocket? = null
 
 
     protected fun inject(component: BaseAppComponent) {
@@ -90,10 +91,7 @@ class MainActivity : AppCompatActivity() {
                     .setAction("Action", null).show()
         }
 
-        val request: Request = Request.Builder().url(getString(R.string.api_ws_base_url) + "btc_jpy").build()
-        mWebSocket = mZaifClientWSOkHttpClient.newWebSocket(request, EchoWebSocketListener())
 
-        mZaifClientWSOkHttpClient.dispatcher().executorService().shutdown()
     }
 
 
@@ -166,5 +164,22 @@ class MainActivity : AppCompatActivity() {
                 return fragment
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        val request: Request = Request.Builder().url(getString(R.string.api_ws_base_url) + "btc_jpy").build()
+        mWebSocket = mZaifClientWSOkHttpClient.newWebSocket(request, EchoWebSocketListener())
+        //mZaifClientWSOkHttpClient.dispatcher().executorService().shutdown()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        mWebSocket?.close(1000, null)
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        mWebSocket?.close(1000, null)
     }
 }
