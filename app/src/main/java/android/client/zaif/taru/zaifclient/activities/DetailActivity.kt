@@ -3,7 +3,7 @@ package android.client.zaif.taru.zaifclient.activities
 import android.client.zaif.taru.zaifclient.BaseAppComponent
 import android.client.zaif.taru.zaifclient.R
 import android.client.zaif.taru.zaifclient.ZaifClientApplication
-import android.client.zaif.taru.zaifclient.models.CurrencyPair
+import android.client.zaif.taru.zaifclient.models.CurrencyPairStream
 import android.client.zaif.taru.zaifclient.network.ZaifClientService
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
@@ -17,17 +17,17 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import com.google.gson.Gson
 
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_main.view.*
+import kotlinx.android.synthetic.main.activity_detail.*
+import kotlinx.android.synthetic.main.fragment_detail.view.*
 import okhttp3.*
 import javax.inject.Inject
-import okio.ByteString.decodeHex
 import okio.ByteString
 import timber.log.Timber
 
 
-class MainActivity : AppCompatActivity() {
+class DetailActivity : AppCompatActivity() {
 
     /**
      * The [android.support.v4.view.PagerAdapter] that will provide
@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit protected var mZaifClientService: ZaifClientService
     @Inject lateinit protected var mZaifClientWSOkHttpClient: OkHttpClient
     protected var mWebSocket: WebSocket? = null
+    private var mGson: Gson = Gson()
 
 
     protected fun inject(component: BaseAppComponent) {
@@ -55,6 +56,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onMessage(webSocket: WebSocket?, text: String?) {
             Timber.d("Receiving : " + text!!)
+            var currencyPairStream = mGson.fromJson(text, CurrencyPairStream::class.java)
         }
 
         override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
@@ -74,7 +76,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_detail)
 
         inject(ZaifClientApplication.getAppComponent())
 
@@ -140,7 +142,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                   savedInstanceState: Bundle?): View? {
-            val rootView = inflater.inflate(R.layout.fragment_main, container, false)
+            val rootView = inflater.inflate(R.layout.fragment_detail, container, false)
             rootView.section_label.text = getString(R.string.section_format, arguments.getInt(ARG_SECTION_NUMBER))
             return rootView
         }

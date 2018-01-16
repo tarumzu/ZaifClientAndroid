@@ -15,7 +15,7 @@
         android:name=".ZaifClientApplication"
         android:theme="@style/AppTheme">
         <activity
-            android:name="android.client.zaif.taru.zaifclient.activities.MainActivity"
+            android:name="android.client.zaif.taru.zaifclient.activities.DetailActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>

@@ -13,7 +13,7 @@ interface ZaifClientService {
     /**
      * リアルタイム取得
      */
-    @GET("/stream?currency_pair={pair}")
+    @GET("/CurrencyPairStream?currency_pair={pair}")
     fun getItems(@Path(value = "pair") pair: String): Call<Void>;
 
 }
