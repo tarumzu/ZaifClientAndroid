@@ -1,33 +1,25 @@
 package android.client.zaif.taru.zaifclient.activities
 
-import android.client.zaif.taru.zaifclient.BaseAppComponent
 import android.client.zaif.taru.zaifclient.R
-import android.client.zaif.taru.zaifclient.ZaifClientApplication
 import android.client.zaif.taru.zaifclient.models.CurrencyPairStream
-import android.client.zaif.taru.zaifclient.network.ZaifClientService
 import android.support.design.widget.Snackbar
-import android.support.v7.app.AppCompatActivity
 
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import com.google.gson.Gson
 
 import kotlinx.android.synthetic.main.activity_detail.*
 import kotlinx.android.synthetic.main.fragment_detail.view.*
 import okhttp3.*
-import javax.inject.Inject
 import okio.ByteString
 import timber.log.Timber
 
 
-class DetailActivity : AppCompatActivity() {
+class DetailActivity : BaseActivity() {
 
     /**
      * The [android.support.v4.view.PagerAdapter] that will provide
@@ -38,15 +30,6 @@ class DetailActivity : AppCompatActivity() {
      * [android.support.v4.app.FragmentStatePagerAdapter].
      */
     private var mSectionsPagerAdapter: SectionsPagerAdapter? = null
-    @Inject lateinit protected var mZaifClientService: ZaifClientService
-    @Inject lateinit protected var mZaifClientWSOkHttpClient: OkHttpClient
-    protected var mWebSocket: WebSocket? = null
-    private var mGson: Gson = Gson()
-
-
-    protected fun inject(component: BaseAppComponent) {
-        component.inject(this);
-    }
 
     private inner class EchoWebSocketListener : WebSocketListener() {
 
@@ -78,8 +61,6 @@ class DetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
 
-        inject(ZaifClientApplication.getAppComponent())
-
         setSupportActionBar(toolbar)
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -95,27 +76,6 @@ class DetailActivity : AppCompatActivity() {
 
 
     }
-
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        val id = item.itemId
-
-        if (id == R.id.action_settings) {
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
-
 
     /**
      * A [FragmentPagerAdapter] that returns a fragment corresponding to

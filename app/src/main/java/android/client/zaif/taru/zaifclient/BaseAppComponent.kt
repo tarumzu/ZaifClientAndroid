@@ -1,5 +1,6 @@
 package android.client.zaif.taru.zaifclient
 
+import android.client.zaif.taru.zaifclient.activities.BaseActivity
 import android.client.zaif.taru.zaifclient.activities.DetailActivity
 import dagger.Component
 import javax.inject.Singleton
@@ -10,5 +11,5 @@ import javax.inject.Singleton
 @Singleton
 @Component(modules = arrayOf(BaseAppModule::class))
 interface BaseAppComponent {
-    fun inject(detailActivity: DetailActivity)
+    fun inject(baseActivity: BaseActivity)
 }
