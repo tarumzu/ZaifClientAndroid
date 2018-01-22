@@ -24,7 +24,7 @@ class MainActivity : BaseActivity() {
         setContentView(R.layout.activity_main)
 
         swiperefresh.setColorSchemeResources(
-                R.color.orange, R.color.blue, R.color.orange,
+                R.color.blue, R.color.blue, R.color.blue,
                 R.color.blue);
         swiperefresh.setOnRefreshListener({
             Timber.d("onRefresh called from SwipeRefreshLayout");
