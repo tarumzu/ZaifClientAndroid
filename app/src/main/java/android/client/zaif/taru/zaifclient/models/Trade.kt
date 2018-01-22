@@ -16,7 +16,7 @@ class Trade {
     var tradeType: String? = null
 
     @Expose
-    var price: Int = 0
+    var price: Double = 0.0
 
     @Expose
     var tid: Int = 0

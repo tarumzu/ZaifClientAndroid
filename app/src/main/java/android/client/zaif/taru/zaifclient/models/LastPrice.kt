@@ -10,5 +10,5 @@ class LastPrice {
     var action: String? = null
 
     @Expose
-    var price: Int = 0
+    var price: Double = 0.0
 }

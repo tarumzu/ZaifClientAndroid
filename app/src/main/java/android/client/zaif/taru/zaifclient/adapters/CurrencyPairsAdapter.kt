@@ -2,8 +2,12 @@ package android.client.zaif.taru.zaifclient.adapters
 
 import android.app.Activity
 import android.client.zaif.taru.zaifclient.R
+import android.client.zaif.taru.zaifclient.activities.BaseActivity
+import android.client.zaif.taru.zaifclient.activities.DetailActivity
 import android.client.zaif.taru.zaifclient.models.CurrencyPair
+import android.client.zaif.taru.zaifclient.utils.Constants
 import android.content.Context
+import android.content.Intent
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -73,7 +77,10 @@ class CurrencyPairsAdapter<T>(recyclerView: RecyclerView, boxes: ArrayList<T>, a
 
         mainholder.frameLayout!!.setOnClickListener { v ->
             if (mActivity == null) return@setOnClickListener
-
+            val intent = Intent(mActivity!!.getApplicationContext(), DetailActivity::class.java)
+            //intent.putExtra(Constants.ARG_TAG, MainActivity.TAG)
+            intent.putExtra("currencyPair", currencyPair.currencyPair)
+            mActivity!!.startActivityForResult(intent, Constants.REQUEST)
         }
     }
 

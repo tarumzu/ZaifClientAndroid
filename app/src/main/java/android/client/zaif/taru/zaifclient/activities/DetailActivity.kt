@@ -1,8 +1,10 @@
 package android.client.zaif.taru.zaifclient.activities
 
+import android.client.zaif.taru.zaifclient.BaseAppComponent
 import android.client.zaif.taru.zaifclient.R
+import android.client.zaif.taru.zaifclient.ZaifClientApplication
 import android.client.zaif.taru.zaifclient.models.CurrencyPairStream
-import android.support.design.widget.Snackbar
+import android.client.zaif.taru.zaifclient.utils.Constants
 
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
@@ -11,12 +13,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.google.gson.Gson
 
 import kotlinx.android.synthetic.main.activity_detail.*
+import kotlinx.android.synthetic.main.fragment_detail.*
 import kotlinx.android.synthetic.main.fragment_detail.view.*
 import okhttp3.*
 import okio.ByteString
 import timber.log.Timber
+import javax.inject.Inject
 
 
 class DetailActivity : BaseActivity() {
@@ -30,38 +35,13 @@ class DetailActivity : BaseActivity() {
      * [android.support.v4.app.FragmentStatePagerAdapter].
      */
     private var mSectionsPagerAdapter: SectionsPagerAdapter? = null
+    private var mCurrencyPair: String? = null
 
-    private inner class EchoWebSocketListener : WebSocketListener() {
-
-        override fun onOpen(webSocket: WebSocket, response: Response) {
-            Timber.d("open")
-        }
-
-        override fun onMessage(webSocket: WebSocket?, text: String?) {
-            Timber.d("Receiving : " + text!!)
-            var currencyPairStream = mGson.fromJson(text, CurrencyPairStream::class.java)
-        }
-
-        override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-            Timber.d("Receiving bytes : " + bytes.hex())
-        }
-
-        override fun onClosing(webSocket: WebSocket?, code: Int, reason: String?) {
-            webSocket!!.close(1000, null)
-            Timber.d("Closing : $code / $reason")
-        }
-
-        override fun onFailure(webSocket: WebSocket?, t: Throwable?, response: Response?) {
-            Timber.d("Error : " + t?.message)
-        }
-
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
 
-        setSupportActionBar(toolbar)
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = SectionsPagerAdapter(supportFragmentManager)
@@ -69,6 +49,11 @@ class DetailActivity : BaseActivity() {
         // Set up the ViewPager with the sections adapter.
         container.adapter = mSectionsPagerAdapter
 
+        val intent = intent
+        val tag = intent.getStringExtra(Constants.ARG_TAG)
+        mCurrencyPair = intent.getStringExtra("currencyPair")
+
+        if (mCurrencyPair == null) this.finish()
     }
 
     /**
@@ -80,7 +65,7 @@ class DetailActivity : BaseActivity() {
         override fun getItem(position: Int): Fragment {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1)
+            return PlaceholderFragment.newInstance(position + 1, mCurrencyPair)
         }
 
         override fun getCount(): Int {
@@ -93,11 +78,59 @@ class DetailActivity : BaseActivity() {
      * A placeholder fragment containing a simple view.
      */
     class PlaceholderFragment : Fragment() {
+        protected var mGson = Gson()
+        protected var mWebSocket: WebSocket? = null
+        private var mCurrencyPair: String? = null
+        @Inject lateinit protected var mZaifClientWSOkHttpClient: OkHttpClient
+
+        protected fun inject(component: BaseAppComponent) {
+            component.inject(this);
+        }
+
+        private inner class EchoWebSocketListener : WebSocketListener() {
+
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                Timber.d("open")
+            }
+
+            override fun onMessage(webSocket: WebSocket?, text: String?) {
+                Timber.d("Receiving : " + text!!)
+                var currencyPairStream = mGson.fromJson(text, CurrencyPairStream::class.java)
+
+                activity.runOnUiThread({
+                    price.text = if (currencyPairStream.lastPrice != null) {
+                        currencyPairStream.lastPrice!!.price.toString()
+                    } else {
+                        currencyPairStream.price.toString()
+                    }
+                })
+            }
+
+            override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+                Timber.d("Receiving bytes : " + bytes.hex())
+            }
+
+            override fun onClosing(webSocket: WebSocket?, code: Int, reason: String?) {
+                webSocket!!.close(1000, null)
+                Timber.d("Closing : $code / $reason")
+            }
+
+            override fun onFailure(webSocket: WebSocket?, t: Throwable?, response: Response?) {
+                Timber.d("Error : " + t?.message)
+            }
+
+        }
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                   savedInstanceState: Bundle?): View? {
+
+            inject(ZaifClientApplication.getAppComponent())
+
             val rootView = inflater.inflate(R.layout.fragment_detail, container, false)
-            rootView.section_label.text = getString(R.string.section_format, arguments.getInt(ARG_SECTION_NUMBER))
+            // TODO: 仮で前ページ固定とする
+            mCurrencyPair = arguments.getString(Constants.ARG_CURRENCY_PAIR)
+            rootView.title.text = getString(R.string.title_format, mCurrencyPair)
+
             return rootView
         }
 
@@ -106,36 +139,39 @@ class DetailActivity : BaseActivity() {
              * The fragment argument representing the section number for this
              * fragment.
              */
-            private val ARG_SECTION_NUMBER = "section_number"
 
             /**
              * Returns a new instance of this fragment for the given section
              * number.
              */
-            fun newInstance(sectionNumber: Int): PlaceholderFragment {
+            fun newInstance(sectionNumber: Int, currencyPair: String?): PlaceholderFragment {
                 val fragment = PlaceholderFragment()
                 val args = Bundle()
-                args.putInt(ARG_SECTION_NUMBER, sectionNumber)
+                args.putInt(Constants.ARG_SECTION_NUMBER, sectionNumber)
+                args.putString(Constants.ARG_CURRENCY_PAIR, currencyPair)
                 fragment.arguments = args
                 return fragment
             }
         }
+
+        override fun onStart() {
+            super.onStart()
+
+            val request: Request = Request.Builder().url(getString(R.string.api_ws_base_url, mCurrencyPair)).build()
+            mWebSocket = mZaifClientWSOkHttpClient.newWebSocket(request, EchoWebSocketListener())
+
+            // TODO: 不要な気がする。調べる
+            //mZaifClientWSOkHttpClient.dispatcher().executorService().shutdown()
+        }
+
+        override fun onStop() {
+            super.onStop()
+            mWebSocket?.close(1000, null)
+        }
+        override fun onDestroy() {
+            super.onDestroy()
+            mWebSocket?.close(1000, null)
+        }
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        val request: Request = Request.Builder().url(getString(R.string.api_ws_base_url) + "btc_jpy").build()
-        mWebSocket = mZaifClientWSOkHttpClient.newWebSocket(request, EchoWebSocketListener())
-        //mZaifClientWSOkHttpClient.dispatcher().executorService().shutdown()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        mWebSocket?.close(1000, null)
-    }
-    override fun onDestroy() {
-        super.onDestroy()
-        mWebSocket?.close(1000, null)
-    }
 }

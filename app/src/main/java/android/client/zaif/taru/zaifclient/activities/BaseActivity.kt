@@ -27,8 +27,6 @@ open class BaseActivity : AppCompatActivity() {
      */
     @Inject lateinit protected var mZaifClientService: ZaifClientService
     @Inject lateinit protected var mZaifClientWSOkHttpClient: OkHttpClient
-    protected var mWebSocket: WebSocket? = null
-    protected var mGson: Gson = Gson()
 
 
     protected fun inject(component: BaseAppComponent) {
@@ -41,7 +39,7 @@ open class BaseActivity : AppCompatActivity() {
         // TODO: 時間あればFragmentでやるようにする
         inject(ZaifClientApplication.getAppComponent())
 
-        setSupportActionBar(toolbar)
+        if (supportActionBar == null) setSupportActionBar(toolbar)
     }
 
 

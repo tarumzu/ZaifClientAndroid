@@ -26,4 +26,7 @@ class CurrencyPairStream {
     @Expose
     @SerializedName("currency_pair")
     var currencyPair: String? = null
+
+    @Expose
+    var price: Double = 0.0
 }

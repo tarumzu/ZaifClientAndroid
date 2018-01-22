@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">ZaifClient</string>
     <string name="action_settings">Settings</string>
-    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="title_format">通貨: %1$s</string>
     <string name="api_base_url">https://api.zaif.jp/</string>
-    <string name="api_ws_base_url">ws://ws.zaif.jp/stream?currency_pair=</string>
+    <string name="api_ws_base_url">ws://ws.zaif.jp/stream?currency_pair=%1$s</string>
 
     <string name="errmsg_not_found">見つかりません</string>
 </resources>
