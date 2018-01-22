@@ -38,8 +38,6 @@ open class BaseActivity : AppCompatActivity() {
 
         // TODO: 時間あればFragmentでやるようにする
         inject(ZaifClientApplication.getAppComponent())
-
-        if (supportActionBar == null) setSupportActionBar(toolbar)
     }
 
 
