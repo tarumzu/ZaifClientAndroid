@@ -37,9 +37,8 @@ open class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // TODO: あとで直す
-        setContentView(R.layout.activity_detail)
 
+        // TODO: 時間あればFragmentでやるようにする
         inject(ZaifClientApplication.getAppComponent())
 
         setSupportActionBar(toolbar)
