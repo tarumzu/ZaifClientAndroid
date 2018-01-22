@@ -66,6 +66,7 @@ class MainActivity : BaseActivity() {
 
                 if (mCurrencyPairsAdapter == null) return
                 val currencyPairs = response.body()
+                currencyPairs?.sortBy { c -> c.seq }
                 mCurrencyPairsAdapter?.resetItems(currencyPairs!!)
                 mCurrencyPairsAdapter?.finish()
             }
