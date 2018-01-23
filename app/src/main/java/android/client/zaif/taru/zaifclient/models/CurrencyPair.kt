@@ -58,4 +58,8 @@ class CurrencyPair {
     @Expose
     @SerializedName("aux_japanese")
     var auxJapanese: String? = null
+
+    @Expose
+    @SerializedName("last_price")
+    var lastPrice: Double = 0.0
 }

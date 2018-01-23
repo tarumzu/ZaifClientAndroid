@@ -70,7 +70,7 @@ abstract class AbstractRecyclerViewFooterAdapter<T>(recyclerView: RecyclerView, 
         return firstVisibleItem
     }
 
-    fun resetItems(newDataSet: ArrayList<T>) {
+    fun resetItems(newDataSet: MutableList<T>) {
         loading = true
         mFinish = true
         firstVisibleItem = 0

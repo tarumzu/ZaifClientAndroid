@@ -13,11 +13,21 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import timber.log.Timber
-import java.util.ArrayList
+import android.R.string.cancel
+import android.client.zaif.taru.zaifclient.utils.Constants
+import android.content.Intent
+import android.os.Handler
+import java.sql.Time
+import java.util.*
+
 
 class MainActivity : BaseActivity() {
 
     var mCurrencyPairsAdapter: CurrencyPairsAdapter<CurrencyPair>? = null
+
+    val handler = Handler()
+    var t: Timer? = null
+    var task: TimerTask? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,18 +56,20 @@ class MainActivity : BaseActivity() {
             initiateRefresh()
         }
         list.setAdapter(mCurrencyPairsAdapter)
+
     }
 
     private fun initiateRefresh() {
         Timber.d("initiateRefresh")
 
         // box一覧取得
+        t?.cancel()
         val currencyPairsCall = mZaifClientService.getCurrencyPairs()
-        currencyPairsCall.enqueue(object : Callback<ArrayList<CurrencyPair>> {
-            override fun onResponse(call: Call<ArrayList<CurrencyPair>>, response: Response<ArrayList<CurrencyPair>>) {
+        currencyPairsCall.enqueue(object : Callback<MutableList<CurrencyPair>> {
+            override fun onResponse(call: Call<MutableList<CurrencyPair>>, response: Response<MutableList<CurrencyPair>>) {
                 if (isDestroyed()) return
 
-                swiperefresh?.setRefreshing(false)
+                swiperefresh.setRefreshing(false)
 
                 if (!response.isSuccessful) {
                     //ErrorUtils.showErrorDialog(mConnectlyAppRetrofit, response, this)
@@ -69,14 +81,79 @@ class MainActivity : BaseActivity() {
                 currencyPairs?.sortBy { c -> c.seq }
                 mCurrencyPairsAdapter?.resetItems(currencyPairs!!)
                 mCurrencyPairsAdapter?.finish()
+
+                // ZaifAPIの制限のため、10秒間隔で価格更新する
+                startTimer()
             }
 
-            override fun onFailure(call: Call<ArrayList<CurrencyPair>>, t: Throwable) {
+            override fun onFailure(call: Call<MutableList<CurrencyPair>>, t: Throwable) {
                 if (isDestroyed()) return
-                swiperefresh?.setRefreshing(false)
+                swiperefresh.setRefreshing(false)
 
                 //ErrorUtils.showNetworkErrorDialog(t, getActivity())
             }
         })
+    }
+
+    override fun onStop() {
+        super.onStop()
+        t?.cancel()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        t?.cancel()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == Constants.REQUEST) {
+            startTimer()
+        }
+    }
+
+    // ZaifAPIの制限のため、10秒間隔で価格更新する
+    fun startTimer() {
+        t?.cancel()
+        t = Timer()
+        task = object : TimerTask() {
+            override fun run() {
+                // Timerスレッド
+                handler.post({
+                    Timber.d("timer loop")
+                    if (mCurrencyPairsAdapter?.getDataSet()?.size!! > 0) {
+                        var currencyPairs = mCurrencyPairsAdapter!!.getDataSet()!!
+                        for (currencyPair in currencyPairs) {
+                            val lastPriceCall = mZaifClientService.getLastPrice(currencyPair.currencyPair.toString())
+                            lastPriceCall.enqueue(object : Callback<CurrencyPair> {
+                                override fun onResponse(call: Call<CurrencyPair>, response: Response<CurrencyPair>) {
+                                    if (isDestroyed()) return
+
+                                    if (!response.isSuccessful) {
+                                        //ErrorUtils.showErrorDialog(mConnectlyAppRetrofit, response, this)
+                                        return
+                                    }
+
+                                    if (mCurrencyPairsAdapter == null) return
+                                    val currencyPairResult = response.body()
+                                    currencyPair.lastPrice = currencyPairResult!!.lastPrice
+                                    //mCurrencyPairsAdapter?.resetItems(currencyPairs!!)
+                                    runOnUiThread({
+                                        mCurrencyPairsAdapter?.notifyDataSetChanged()
+                                    })
+                                }
+
+                                override fun onFailure(call: Call<CurrencyPair>, t: Throwable) {
+                                    if (isDestroyed()) return
+                                    //ErrorUtils.showNetworkErrorDialog(t, getActivity())
+                                }
+                            })
+                        }
+                    }
+                })
+            }
+        }
+        t!!.scheduleAtFixedRate(task, 500, 10000);
     }
 }

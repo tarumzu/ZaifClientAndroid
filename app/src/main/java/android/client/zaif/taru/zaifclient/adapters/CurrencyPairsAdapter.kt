@@ -75,6 +75,8 @@ class CurrencyPairsAdapter<T>(recyclerView: RecyclerView, boxes: ArrayList<T>, a
 
         mainholder.nameTextView!!.setText(currencyPair.name)
 
+        mainholder.priceTextView!!.setText(currencyPair.lastPrice.toString())
+
         mainholder.frameLayout!!.setOnClickListener { v ->
             if (mActivity == null) return@setOnClickListener
             val intent = Intent(mActivity!!.getApplicationContext(), DetailActivity::class.java)
@@ -100,6 +102,7 @@ class CurrencyPairsAdapter<T>(recyclerView: RecyclerView, boxes: ArrayList<T>, a
      */
     internal class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
         var nameTextView: TextView? = v.findViewById(R.id.name) as TextView
+        var priceTextView: TextView? = v.findViewById(R.id.price) as TextView
         var frameLayout: RelativeLayout? = v.findViewById(R.id.frame) as RelativeLayout
     }
 }

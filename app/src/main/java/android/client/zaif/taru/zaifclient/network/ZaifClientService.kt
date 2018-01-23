@@ -15,8 +15,11 @@ interface ZaifClientService {
      * リアルタイム取得
      */
     @GET("/api/1/currency_pairs/all")
-    fun getCurrencyPairs(): Call<ArrayList<CurrencyPair>>
+    fun getCurrencyPairs(): Call<MutableList<CurrencyPair>>
 
     @GET("/api/1/currency_pairs/{pair}")
-    fun getCurrencyPair(@Path(value = "pair") pair: String): CurrencyPair
+    fun getCurrencyPair(@Path(value = "pair") pair: String): Call<CurrencyPair>
+
+    @GET("/api/1/last_price/{pair}")
+    fun getLastPrice(@Path(value = "pair") pair: String): Call<CurrencyPair>
 }
